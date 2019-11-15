@@ -12,6 +12,7 @@
 #include <Eigen/Core>
 #include <iostream>
 #include <vector>
+#include <set>
 #include <unsupported/Eigen/CXX11/Tensor>
 
 using namespace std;
@@ -185,6 +186,16 @@ void exercise_18()
     cout << Z << endl;
 }
 
+void exercise_21()
+{
+    // 21. Create a checkerboard 8x8 matrix using the tile function (★☆☆)
+    MatrixXf Z(2,2);
+    Z << 0,1,
+         1,0;
+
+    cout <<  Z.replicate(4, 4) << endl;
+}
+
 void exercise_22()
 {
     // 22. Normalize a 5x5 random matrix (★☆☆)
@@ -194,6 +205,56 @@ void exercise_22()
     Z = (Z.array() - mean) / (std);
 
     cout << Z << endl;
+}
+
+
+void exercise_24()
+{
+    // 24. Multiply a 5x3 matrix by a 3x2 matrix (real matrix product) (★☆☆)
+    MatrixXf A = MatrixXf::Ones(5,3);
+    MatrixXf B = MatrixXf::Ones(3,2);
+
+    MatrixXf Z = A * B;
+
+    cout << Z << endl;
+}
+void exercise_25()
+{
+    // 25. Given a 1D array, negate all elements which are between 3 and 8, in place. (★☆☆)
+
+    VectorXf Z = VectorXf::LinSpaced(11, 0, 10);
+    Matrix<float, Dynamic, 1> B = (3 < Z.array() && Z.array() <= 8).cast<float>() * -1.0;
+    Matrix<float, Dynamic, 1> C = B.array() + 1.0;
+
+    cout << Z.array() * B.array() + Z.array() * C.array() << endl;
+}
+
+void exercise_30()
+{
+    // 30. How to find common values between two arrays? (★☆☆)
+    std::mt19937 gen(0);
+    std::uniform_int_distribution<int> dis(0, 10);
+
+    // generate random int numbers in range [0, 10]
+    auto func = [&](int x){return dis(gen);};
+    VectorXi A = VectorXd::Zero(10).unaryExpr(func);
+    VectorXi B = VectorXd::Zero(10).unaryExpr(func);
+
+    std::set<int> commom_values_set;
+    auto find_common_values = [&](int x){
+        if( (B.array() == x).any() )
+        {
+            commom_values_set.insert(x);
+        }
+        return x;
+    };
+
+    A = A.unaryExpr(find_common_values);
+
+    for(const auto& v : commom_values_set)
+    {
+        cout << v << " ";
+    }
 }
 
 void exercises()
@@ -213,7 +274,11 @@ void exercises()
 //    exercise_15();
 //    exercise_16();
 //    exercise_18();
-    exercise_22();
+//    exercise_21();
+//    exercise_22();
+//    exercise_24();
+//    exercise_25();
+    exercise_30();
 }
 
 int main()
