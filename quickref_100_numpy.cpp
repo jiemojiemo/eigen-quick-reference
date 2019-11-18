@@ -13,6 +13,7 @@
 #include <iostream>
 #include <vector>
 #include <set>
+#include <algorithm>
 #include <unsupported/Eigen/CXX11/Tensor>
 
 using namespace std;
@@ -257,6 +258,166 @@ void exercise_30()
     }
 }
 
+void exercise_39()
+{
+    // 39. Create a vector of size 10 with values ranging from 0 to 1, both excluded (★★☆)¶
+    VectorXf Z = VectorXf::LinSpaced(12, 0, 1);
+    Z = Z.segment(1, 10);
+    cout << Z << endl;
+}
+
+void exercise_40()
+{
+    // 40. Create a random vector of size 10 and sort it (★★☆)
+   VectorXf Z = VectorXf::Random(10);
+
+   sort(Z.data(), Z.data()+Z.size(), [](float x, float y){return x < y;});
+
+   cout << Z << endl;
+}
+
+void exercise_40_1()
+{
+    // 40_1. Create a random matrix of size 10x10 and sort it row by row (★★☆)
+    MatrixXf Z = MatrixXf::Random(10, 10);
+
+    auto sort_func = [](float x, float y){return x<y;};
+
+    std::vector<MatrixXf::Scalar> data(Z.cols());
+    for(int i = 0; i < Z.rows(); ++i)
+    {
+        // copy row to data array
+        for(int j = 0; j < Z.cols(); ++j)
+        {
+            data[j] = Z(i, j);
+        }
+
+        // sort data array
+        sort(data.begin(), data.end(), sort_func);
+
+        // copy back to row
+        for(int j = 0; j < Z.cols(); ++j)
+        {
+            Z(i, j) = data[j];
+        }
+    }
+
+    cout << Z << endl;
+}
+
+void exercise_40_2()
+{
+    // 40_2. Create a random matrix of size 10x10 and sort it col by col (★★☆)
+    MatrixXf Z = MatrixXf::Random(10, 10);
+
+    auto sort_func = [](float x, float y){return x<y;};
+
+    std::vector<MatrixXf::Scalar> data(Z.rows());
+    for(int i = 0; i < Z.cols(); ++i)
+    {
+        // copy row to data array
+        for(int j = 0; j < Z.rows(); ++j)
+        {
+            data[j] = Z(j, i);
+        }
+
+        // sort data array
+        sort(data.begin(), data.end(), sort_func);
+
+        // copy back to row
+        for(int j = 0; j < Z.rows(); ++j)
+        {
+            Z(j, i) = data[j];
+        }
+    }
+
+    cout << Z << endl;
+
+}
+
+
+void exercise_42()
+{
+    // 42. Consider two random array A and B, check if they are equal (★★☆)
+    MatrixXf A = MatrixXf::Random(5,5);
+    MatrixXf B = MatrixXf::Random(5,5);
+
+    bool equal = (A.array() == B.array()).all();
+
+    cout << equal << endl;
+}
+
+void exercise_44()
+{
+    // 44. Consider a random 10x2 matrix representing cartesian coordinates, convert them to polar coordinates (★★☆)
+    MatrixXf Z = MatrixXf::Random(10, 2);
+    VectorXf X = Z.col(0);
+    VectorXf Y = Z.col(1);
+
+    VectorXf R = (X.array().square() + Y.array().square()).sqrt();
+    VectorXf T = (Y.array()/X.array()).atan();
+
+    cout << "R:\n" << R << endl;
+    cout << "T:\n" << T << endl;
+}
+
+void exercise_45()
+{
+    // 45. Create random vector of size 10 and replace the maximum value by 0 (★★☆)
+    VectorXf Z = VectorXf::Random(10);
+    VectorXf::Index max_index;
+
+    Z.maxCoeff(&max_index);
+
+    Z(max_index) = 0.0;
+
+    cout << Z << endl;
+}
+
+void exercise_47()
+{
+    // 47. Given two arrays, X and Y, construct the Cauchy matrix C (Cij =1/(xi - yj))
+    VectorXf X = VectorXf::LinSpaced(8, 0, 7);
+    VectorXf Y = X.array() + 0.5;
+
+    MatrixXf C(X.size(), Y.size());
+
+    for(int i = 0; i < C.cols(); ++i)
+    {
+        C.col(i) = 1.0/(X.array() - Y(i));
+    }
+
+    cout << C << endl;
+}
+
+void exercise_50()
+{
+    // 50. How to find the closest value (to a given scalar) in a vector? (★★☆)
+    VectorXf Z = VectorXf::LinSpaced(100, 0, 99);
+    float v = 10;
+    VectorXf::Index index;
+
+    (Z.array() - v).abs().minCoeff(&index);
+
+    cout << index << endl;
+}
+
+void exercise_51()
+{
+    //    52. Consider a random vector with shape (10,2) representing coordinates, find point by point distances (★★☆)
+    MatrixXf Z = MatrixXf::Random(10, 2);
+    Matrix<float, Dynamic, 1> X = Z.col(0);
+    Matrix<float, 1, Dynamic> Y = Z.col(1);
+
+    MatrixXf XX = X.rowwise().replicate(10);
+    MatrixXf YY = Y.colwise().replicate(10);
+
+    MatrixXf D = (XX - XX.transpose()).array().square() + (YY - YY.transpose()).array().square();
+
+    cout << D.cwiseSqrt() << endl; // D.cwiseSqrt() = D.array().sqrt()
+}
+
+
 void exercises()
 {
 //    exercise_2();
@@ -278,7 +439,17 @@ void exercises()
 //    exercise_22();
 //    exercise_24();
 //    exercise_25();
-    exercise_30();
+//    exercise_30();
+//    exercise_39();
+//    exercise_40();
+//    exercise_40_1()
+//    exercise_40_2();
+//    exercise_42();
+//    exercise_44();
+//    exercise_45();
+//    exercise_47();
+//    exercise_50();
+    exercise_51();
 }
 
 int main()
