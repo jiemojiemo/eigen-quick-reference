@@ -14,6 +14,7 @@
 #include <vector>
 #include <set>
 #include <algorithm>
+#include <map>
 #include <unsupported/Eigen/CXX11/Tensor>
 
 using namespace std;
@@ -23,7 +24,7 @@ void exercise_2()
 {
     // 2. Print the eigen version
     cout << "Eigen version " << EIGEN_MAJOR_VERSION << "."
-                             << EIGEN_MINOR_VERSION << endl;
+         << EIGEN_MINOR_VERSION << endl;
 }
 
 void exercise_3()
@@ -192,7 +193,7 @@ void exercise_21()
     // 21. Create a checkerboard 8x8 matrix using the tile function (★☆☆)
     MatrixXf Z(2,2);
     Z << 0,1,
-         1,0;
+        1,0;
 
     cout <<  Z.replicate(4, 4) << endl;
 }
@@ -243,11 +244,11 @@ void exercise_30()
 
     std::set<int> commom_values_set;
     auto find_common_values = [&](int x){
-        if( (B.array() == x).any() )
-        {
-            commom_values_set.insert(x);
-        }
-        return x;
+      if( (B.array() == x).any() )
+      {
+          commom_values_set.insert(x);
+      }
+      return x;
     };
 
     A = A.unaryExpr(find_common_values);
@@ -269,11 +270,11 @@ void exercise_39()
 void exercise_40()
 {
     // 40. Create a random vector of size 10 and sort it (★★☆)
-   VectorXf Z = VectorXf::Random(10);
+    VectorXf Z = VectorXf::Random(10);
 
-   sort(Z.data(), Z.data()+Z.size(), [](float x, float y){return x < y;});
+    sort(Z.data(), Z.data()+Z.size(), [](float x, float y){return x < y;});
 
-   cout << Z << endl;
+    cout << Z << endl;
 }
 
 void exercise_40_1()
@@ -402,24 +403,143 @@ void exercise_50()
     cout << index << endl;
 }
 
-void exercise_51()
+void exercise_52()
 {
     //    52. Consider a random vector with shape (10,2) representing coordinates, find point by point distances (★★☆)
     MatrixXf Z = MatrixXf::Random(10, 2);
     Matrix<float, Dynamic, 1> X = Z.col(0);
-    Matrix<float, 1, Dynamic> Y = Z.col(1);
+    Matrix<float, Dynamic, 1> Y = Z.col(1);
 
     MatrixXf XX = X.rowwise().replicate(10);
-    MatrixXf YY = Y.colwise().replicate(10);
+    MatrixXf YY = Y.rowwise().replicate(10);
 
     MatrixXf D = (XX - XX.transpose()).array().square() + (YY - YY.transpose()).array().square();
 
     cout << D.cwiseSqrt() << endl; // D.cwiseSqrt() = D.array().sqrt()
 }
 
+void exercise_56()
+{
+    // 56. Generate a generic 2D Gaussian-like array (★★☆)
+//    Matrix<float,Dynamic,1> X =
+    VectorXf V = VectorXf::LinSpaced(10, -1, 1);
+
+    MatrixXf Y = V.rowwise().replicate(10);
+    MatrixXf X = Y.transpose();
+
+    MatrixXf G = (X.array().square() + Y.array().square()).cwiseSqrt();
+
+    float sigma = 1.0;
+    float mu = 0.0;
+
+    MatrixXf result = ( -(G.array() - mu).square() / (2.0 * sigma*sigma) ).exp();
+
+    cout << result << endl;
+}
+
+void exercise_58()
+{
+    // 58. Subtract the mean of each row of a matrix (★★☆)¶
+    MatrixXf Z = MatrixXf::Random(5, 10);
+    VectorXf mean = Z.rowwise().mean();
+
+    cout << Z.colwise() - mean << endl;
+}
+
+void exercise_59()
+{
+    // 59. How to sort an array by the nth column? (★★☆)
+    MatrixXf Z = MatrixXf::Random(3,3);
+    cout << Z << endl << endl;
+
+    int n = 1; // first column
+    auto compare_nth = [&n](const VectorXf& lhs, const VectorXf& rhs){
+      return lhs(n) < rhs(n);
+    };
+
+    std::vector<VectorXf> vec;
+    for(int i = 0; i < Z.rows(); ++i)
+    {
+        vec.emplace_back(Z.row(i));
+    }
+
+    std::sort(vec.begin(), vec.end(), compare_nth);
+
+    for(int i = 0; i < Z.rows(); ++i)
+    {
+        Z.row(i) = vec[i];
+    }
+
+    cout << Z << endl;
+}
+
+void exercise_60()
+{
+    // 60. How to tell if a given 2D array has null columns? (★★☆)
+    MatrixXf Z = MatrixXf::Random(5,5);
+    Z(0,0) = sqrt(-1); // genenrate a nan
+
+    cout << Eigen::isnan(Z.array()).any() << endl;
+}
+
+void exercise_61()
+{
+    // 61. Find the nearest value from a given value in an array (★★☆)
+    VectorXf Z = VectorXf::Random(10);
+    float z = 0.5;
+
+    VectorXf::Index min_index;
+    (Z.array() - z).abs().minCoeff(&min_index);
+
+    cout << Z(min_index) << endl;
+}
+
+void exercise_64()
+{
+    // 64. Consider a given vector, how to add 1 to each element indexed by a second vector (be careful with repeated indices)? (★★★)
+    VectorXf Z = VectorXf::Ones(10);
+    VectorXi I(20);
+    I << 7, 4, 2, 6, 4, 8, 6, 3, 0, 8, 1, 0, 5, 1, 9, 7, 5, 1, 8, 7;
+
+    std::map<int, int> bins;
+    for(int i = 0; i < I.size(); ++i)
+    {
+        const int key = I(i);
+        if(bins.find(key) != bins.end())
+        {
+            ++bins[key];
+        } else
+        {
+            bins[key] = 1;
+        }
+    }
+
+    for(int i = 0; i < Z.size(); ++i)
+    {
+        Z(i) += bins[i];
+    }
+
+    cout << Z << endl;
+}
+
+void E_1()
+{
+    // how to append tow vector
+    VectorXf A = VectorXf::Random(3);
+    VectorXf B = VectorXf::Random(3);
+
+    VectorXf C(A.size() + B.size());
+
+    C << A,B;
+
+    cout << C << endl;
+}
+
 
 void exercises()
 {
+//    E_1();
+
 //    exercise_2();
 //    exercise_3();
 //    exercise_4();
@@ -449,7 +569,14 @@ void exercises()
 //    exercise_45();
 //    exercise_47();
 //    exercise_50();
-    exercise_51();
+//    exercise_52();
+//    exercise_53();
+//    exercise_56();
+//    exercise_58();
+//    exercise_59();
+//    exercise_60();
+//    exercise_61();
+    exercise_64();
 }
 
 int main()
